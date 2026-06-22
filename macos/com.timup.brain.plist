@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd agent to keep the Timup brain running at login (macOS).
+  Install:
+    1. Edit the paths below (NODE_BIN, brain dir).
+    2. cp com.timup.brain.plist ~/Library/LaunchAgents/
+    3. launchctl load ~/Library/LaunchAgents/com.timup.brain.plist
+  Logs go to ~/Library/Logs/timup-brain.{out,err}.log
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.timup.brain</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-lc</string>
+    <!-- Adjust the path to your brain directory. Uses the login shell so npm/node resolve. -->
+    <string>cd "$HOME/VSCode3/Timup/brain" &amp;&amp; exec npm run brain</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>TIMUP_DATA_DIR</key>
+    <string>__HOME__/Library/Application Support/Timup</string>
+    <key>TIMUP_TZ</key>
+    <string>Europe/Paris</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/timup-brain.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/timup-brain.err.log</string>
+</dict>
+</plist>

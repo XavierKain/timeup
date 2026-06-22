@@ -1,0 +1,26 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "timup",
+  "title": "Timup",
+  "description": "Démarrer/arrêter le timer Timup et voir le solde de forfait depuis Raycast",
+  "icon": "command-icon.png",
+  "author": "xavier",
+  "license": "MIT",
+  "commands": [
+    { "name": "start-timer", "title": "Démarrer un timer", "subtitle": "Timup", "description": "Choisir un projet et lancer le timer", "mode": "view" },
+    { "name": "stop-timer", "title": "Arrêter le timer", "subtitle": "Timup", "description": "Arrête le timer en cours et écrit l'entrée", "mode": "no-view" },
+    { "name": "toggle-pause", "title": "Pause / Reprendre le timer", "subtitle": "Timup", "description": "Bascule pause/reprise du timer", "mode": "no-view" },
+    { "name": "toggle-last-timer", "title": "Démarrer / arrêter le dernier timer", "subtitle": "Timup", "description": "Arrête le timer en cours, sinon relance le dernier projet", "mode": "no-view" },
+    { "name": "reassign-timer", "title": "Réassigner le timer en cours", "subtitle": "Timup", "description": "Change le projet auquel le timer en cours est associé", "mode": "view" },
+    { "name": "add-time", "title": "Ajouter du temps au timer", "subtitle": "Timup", "description": "Recule le départ du timer en cours d'un nombre de minutes précis", "mode": "view" },
+    { "name": "set-description", "title": "Décrire le timer en cours", "subtitle": "Timup", "description": "Ajoute ou modifie la description du timer en cours (saisie ou dictée)", "mode": "view" },
+    { "name": "timer-menu-bar", "title": "Timer Timup (barre de menu)", "description": "Affiche le timer en cours et le solde de forfait", "mode": "menu-bar", "interval": "30s" }
+  ],
+  "preferences": [
+    { "name": "port", "title": "Port du brain", "description": "Port HTTP local du service Timup", "type": "textfield", "default": "47823", "required": false },
+    { "name": "token", "title": "Token", "description": "Token local (voir <dataDir>/config.json)", "type": "password", "required": true }
+  ],
+  "dependencies": { "@raycast/api": "^1.85.0" },
+  "devDependencies": { "@types/node": "^22.10.7", "@types/react": "^19.0.10", "typescript": "^5.7.3" },
+  "scripts": { "dev": "ray develop", "build": "ray build" }
+}

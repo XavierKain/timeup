@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+.timup-data/
+*.db
+*.db-wal
+*.db-shm

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd agent to run the Timup idle/lock watcher at login (macOS, US-4 detection).
+  Pauses the running timer after 5 min of inactivity, stops it on screen lock, and
+  prompts on return. Needs the brain agent (com.timup.brain) alive.
+  Install:
+    1. Check the path to the macos/ dir below (idle-watcher.mjs lives there).
+    2. sed "s|__HOME__|$HOME|g" com.timup.idle-watcher.plist > ~/Library/LaunchAgents/com.timup.idle-watcher.plist
+    3. launchctl load ~/Library/LaunchAgents/com.timup.idle-watcher.plist
+  Logs go to ~/Library/Logs/timup-idle-watcher.{out,err}.log
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.timup.idle-watcher</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-lc</string>
+    <!-- Adjust the path to your macos/ directory. Login shell so node resolves. -->
+    <string>cd "$HOME/VSCode3/Timup/macos" &amp;&amp; exec node idle-watcher.mjs</string>
+  </array>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>TIMUP_DATA_DIR</key>
+    <string>__HOME__/Library/Application Support/Timup</string>
+    <key>TIMUP_TZ</key>
+    <string>Europe/Paris</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/timup-idle-watcher.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/timup-idle-watcher.err.log</string>
+</dict>
+</plist>

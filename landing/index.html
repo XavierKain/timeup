@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeUp — Le suivi de temps, dans ta barre de menu</title>
+  <meta name="description" content="TimeUp : suivi de temps local et privé pour consultants indépendants. Démarre, arrête et facture tes projets sans quitter ta barre de menu macOS." />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+  <meta property="og:title" content="TimeUp — Le suivi de temps, dans ta barre de menu" />
+  <meta property="og:description" content="Suivi de temps local et privé pour consultants indépendants. Forfaits, rentabilité, 100 % sur ton Mac." />
+  <meta property="og:type" content="website" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <img src="assets/logo.svg" alt="" />
+        <span>Time<span class="gradient-text">Up</span></span>
+      </a>
+      <nav class="nav-links">
+        <a href="#features">Fonctionnalités</a>
+        <a href="#menubar">Barre de menu</a>
+        <a href="#privacy">Confidentialité</a>
+        <a class="btn btn-primary" href="#download">Télécharger</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <main id="top">
+    <section class="hero container">
+      <span class="eyebrow"><span class="dot"></span> App macOS native · Apple Silicon</span>
+      <h1>Ton temps, dans ta <span class="gradient-text">barre de menu</span>.</h1>
+      <p class="lead">TimeUp est un suivi de temps <strong>local et privé</strong> pour consultants indépendants. Démarre, mets en pause et facture tes projets — sans jamais quitter ton Mac.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#download">Télécharger pour macOS</a>
+        <a class="btn btn-ghost" href="#features">Voir les fonctionnalités</a>
+      </div>
+      <p class="hero-meta">macOS 13+ · Apple Silicon · 100 % local, aucune donnée dans le cloud</p>
+
+      <!-- Menu-bar + dropdown mockup -->
+      <div class="stage" id="menubar-stage">
+        <div class="fakebar">
+          <span class="menubar-pill">
+            <svg class="clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 13V9"/><path d="M9.5 2h5"/></svg>
+            Lumio · 1h23 ▾
+          </span>
+          <span class="muted" style="font-size:12.5px">ven. 9:41</span>
+        </div>
+        <div class="window">
+          <div class="dropdown">
+            <div class="row head">Lumio — Refonte v1 · en cours</div>
+            <div class="row"><span>📝 Refonte page d'accueil</span></div>
+            <div class="row muted"><span>Restant forfait</span><span>4h12</span></div>
+            <div class="sep"></div>
+            <div class="row active"><span>⏸ Pause</span></div>
+            <div class="row"><span>⏹ Arrêter</span></div>
+            <div class="sep"></div>
+            <div class="row"><span>Changer de projet</span><span class="muted">›</span></div>
+            <div class="row"><span>Ajouter du temps</span><span class="muted">›</span></div>
+          </div>
+          <div class="showcase-copy">
+            <h3>Tout se pilote depuis la barre de menu.</h3>
+            <p>Un clic pour démarrer, un raccourci global pour basculer ton dernier timer. Une notification claire te confirme chaque action.</p>
+            <span class="hud">⏹ Arrêté — enregistré · 1h23</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">Fonctionnalités</div>
+          <h2>Pensé pour la facturation des indépendants.</h2>
+          <p>Du démarrage du timer à la rentabilité par projet, sans friction.</p>
+        </div>
+        <div class="features">
+          <div class="feature">
+            <div class="ico">🖥️</div>
+            <h3>Barre de menu native</h3>
+            <p>Démarre, arrête ou mets en pause un timer en un clic — ou avec un raccourci clavier global.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">📦</div>
+            <h3>Forfaits & heures</h3>
+            <p>Suis le temps consommé par forfait et le restant en direct, projet par projet.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">📈</div>
+            <h3>Rentabilité</h3>
+            <p>Taux horaire effectif, prix fixe vs temps réellement passé : sache ce qui est rentable.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">🔒</div>
+            <h3>100 % local & privé</h3>
+            <p>Tes clients et ta facturation restent sur ton Mac, dans une base SQLite. Aucun cloud.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">☕️</div>
+            <h3>Détection d'inactivité</h3>
+            <p>Pause automatique quand tu t'absentes, et tu choisis quoi faire du temps inactif au retour.</p>
+          </div>
+          <div class="feature">
+            <div class="ico">🧾</div>
+            <h3>Heures à facturer</h3>
+            <p>Entrées regroupées par jour et par projet, prix calculé, export CSV en un clic.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD PREVIEW -->
+    <section id="menubar">
+      <div class="container">
+        <div class="section-head">
+          <div class="kicker">Tableau de bord</div>
+          <h2>La vue d'ensemble, quand tu en as besoin.</h2>
+          <p>Entrées, clients, forfaits et rentabilité — un dashboard clair, en local.</p>
+        </div>
+        <div class="dashwrap">
+          <div class="dashbar">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <div class="tabs"><span class="on">Rentabilité</span><span>Entrées</span><span>Clients</span><span>Facture</span></div>
+          </div>
+          <div class="dashbody">
+            <div class="dashrow h"><span>Projet</span><span class="num">Temps</span><span class="num col-hide">Taux effectif</span><span class="num">Statut</span></div>
+            <div class="dashrow"><span>Lumio — Refonte v1</span><span class="num">42h30</span><span class="num col-hide">78 €/h</span><span class="num"><span class="tag">En cours</span></span></div>
+            <div class="dashrow"><span>Nordic — Audit SEO</span><span class="num">12h00</span><span class="num col-hide">95 €/h</span><span class="num"><span class="tag">En cours</span></span></div>
+            <div class="dashrow"><span>Bellevue — Forfait</span><span class="num">28h15</span><span class="num col-hide">64 €/h</span><span class="num"><span class="tag">Terminé</span></span></div>
+            <div class="dashrow"><span>Studio Mira — Site</span><span class="num">9h45</span><span class="num col-hide">112 €/h</span><span class="num"><span class="tag">Terminé</span></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRIVACY BAND -->
+    <section id="privacy">
+      <div class="container">
+        <div class="band">
+          <h2>Tes données ne quittent <span class="gradient-text">jamais</span> ton Mac.</h2>
+          <p>Pas de compte, pas de serveur, pas de pistage. TimeUp tourne en local et stocke tout dans une simple base SQLite que tu maîtrises — sauvegardes et exports compris.</p>
+          <div class="pill-row">
+            <span class="pill">🔒 100 % hors-ligne</span>
+            <span class="pill">🗄 SQLite local</span>
+            <span class="pill">⬇︎ Export CSV / JSON</span>
+            <span class="pill">🛡 Zéro télémétrie</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section id="download" class="final">
+      <div class="container">
+        <h2>Reprends le contrôle de ton temps facturé.</h2>
+        <p>Léger, natif, privé. Installe TimeUp et oublie-le — il travaille dans ta barre de menu.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="https://github.com/XavierKain/timeup/releases/latest" target="_blank" rel="noopener">Télécharger pour macOS</a>
+          <a class="btn btn-ghost" href="https://github.com/XavierKain/timeup" target="_blank" rel="noopener">Voir le code sur GitHub</a>
+        </div>
+        <p class="hero-meta">Universal · macOS 13 Ventura ou plus récent</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container foot-inner">
+      <a class="brand" href="#top">
+        <img src="assets/logo.svg" alt="" style="width:24px;height:24px;border-radius:7px" />
+        <span>Time<span class="gradient-text">Up</span></span>
+      </a>
+      <div class="foot-links">
+        <a href="#features">Fonctionnalités</a>
+        <a href="#privacy">Confidentialité</a>
+        <a href="https://github.com/XavierKain/timeup" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <span>© 2026 Xavier Kain · TimeUp</span>
+    </div>
+  </footer>
+
+</body>
+</html>

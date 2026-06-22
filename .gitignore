@@ -1,0 +1,25 @@
+# Dependencies / build
+node_modules/
+dist/
+.build/
+*.log
+*.tsbuildinfo
+
+# Raycast generated files
+raycast-env.d.ts
+.raycast/
+
+# Local data (SQLite + config with token)
+.timup-data/
+*.db
+*.db-wal
+*.db-shm
+config.json
+
+# Real client data — never publish
+*.csv
+*.xls
+*.xlsx
+
+# macOS noise
+.DS_Store

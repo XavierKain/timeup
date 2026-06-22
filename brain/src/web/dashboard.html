@@ -1,0 +1,1290 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timup</title>
+<style>
+  :root {
+    --bg: #f5f2ec; --surface: #ffffff; --surface-2: #faf8f3; --border: #e8e3d8;
+    --text: #1f2926; --muted: #79817a;
+    --accent: #0e7a72; --accent-2: #0a5f59; --accent-soft: #dcece9;
+    --ok: #2f8f57; --warn: #b9802a; --danger: #c0453b;
+    --ok-soft: #e3f3ea; --warn-soft: #f6ecd6; --danger-soft: #f6e1de;
+    --elev: 0 1px 2px rgba(40,38,32,.05), 0 10px 26px -16px rgba(40,38,32,.22);
+    --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --font-display: ui-serif, "New York", Georgia, "Times New Roman", serif;
+  }
+  :root.dark {
+    --bg: #14181a; --surface: #1c2123; --surface-2: #232a2c; --border: #2d3538;
+    --text: #e6ece9; --muted: #8b948e;
+    --accent: #45c3b6; --accent-2: #5fd0c4; --accent-soft: #15302d;
+    --ok: #4cae74; --warn: #d29a4a; --danger: #d76b60;
+    --ok-soft: #16302554; --warn-soft: #30281355; --danger-soft: #321e1b66;
+    --elev: 0 1px 2px rgba(0,0,0,.3), 0 12px 30px -18px rgba(0,0,0,.7);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-body); background: var(--bg); color: var(--text);
+    font-size: 15px; -webkit-font-smoothing: antialiased; }
+  .app { display: grid; grid-template-columns: 234px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 18px 14px;
+    position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-head { display: flex; align-items: center; justify-content: space-between; }
+  .brand { font-family: var(--font-display); font-size: 23px; font-weight: 600; color: var(--accent);
+    padding: 4px 10px 18px; letter-spacing: .3px; display: flex; align-items: center; gap: 9px; }
+  .nav-toggle { display: none; background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
+    width: 40px; height: 36px; font-size: 18px; line-height: 1; cursor: pointer; color: var(--text); }
+  nav { display: flex; flex-direction: column; gap: 2px; }
+  nav button { display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; background: none;
+    border: none; padding: 9px 12px; border-radius: 9px; cursor: pointer; color: var(--muted);
+    font: inherit; font-size: 14px; font-weight: 500; transition: background .15s, color .15s; }
+  nav button:hover { background: var(--surface-2); color: var(--text); }
+  nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  nav button .ic { font-size: 15px; width: 18px; text-align: center; flex: none; }
+  .content { display: flex; flex-direction: column; min-width: 0; }
+  .topbar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 13px 28px;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: blur(10px); }
+  #timerbar { font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 500; }
+  #theme-toggle { background: var(--surface-2); border: 1px solid var(--border); border-radius: 9px;
+    width: 34px; height: 34px; cursor: pointer; font-size: 15px; color: var(--text); line-height: 1;
+    transition: background .15s; }
+  #theme-toggle:hover { background: var(--accent-soft); }
+  main { padding: 28px; max-width: 1080px; width: 100%; margin: 0 auto; }
+  section { display: none; }
+  section.active { display: block; animation: fadeUp .34s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+  h2 { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin: 0 0 16px; letter-spacing: .2px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; font-size: 14px; box-shadow: var(--elev); }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  th { background: var(--surface-2); font-weight: 600; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .6px; color: var(--muted); }
+  tbody tr:nth-child(even) { background: var(--surface-2); }
+  tbody tr:hover { background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+  tr:last-child td { border-bottom: none; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr.rowdone td { color: var(--muted); }
+  tbody tr.subtotal td, tbody tr.subtotal:nth-child(even) td { background: var(--surface-2); color: var(--muted); font-size: 13px; }
+  tbody tr.grandtotal td, tbody tr.grandtotal:nth-child(even) td { background: var(--accent-soft); border-top: 2px solid var(--border); color: var(--text); }
+  tbody tr.subtotal:hover td, tbody tr.grandtotal:hover td { background: var(--accent-soft); }
+  .neg { color: var(--danger); font-weight: 600; }
+  .pos { color: var(--ok); font-weight: 500; }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.danger { background: var(--danger); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap; }
+  #renta-table th:last-child, #renta-table td:last-child { white-space: nowrap; }
+  tr.hrow, tr.frow, tr.clirow { cursor: pointer; }
+  .chev { display: inline-block; width: 13px; color: var(--muted); font-size: 9px; transition: transform .15s; }
+  tr.hrow .chev::before, tr.clirow .chev::before { content: "▶"; }
+  tr.hrow.expanded .chev, tr.clirow.expanded .chev { transform: rotate(90deg); }
+  tr.hourly-detail td, tr.cli-detail td { background: var(--surface-2); color: var(--muted); font-size: 13px; padding-top: 5px; padding-bottom: 5px; }
+  tr.hourly-detail:hover td, tr.cli-detail:hover td { background: var(--surface-2); }
+  tr.hourly-detail td.hd-time { padding-left: 30px; font-variant-numeric: tabular-nums; }
+  tr.hourly-detail td.hd-desc, tr.cli-detail td.cd-name { color: var(--text); }
+  tr.cli-detail td.cd-name { padding-left: 30px; }
+  table.sortable th.th-sort { cursor: pointer; user-select: none; }
+  table.sortable th.th-sort:hover { color: var(--text); }
+  .sort-arrow { font-size: 9px; color: var(--accent); margin-left: 3px; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .pill.danger { background: var(--danger-soft); color: var(--danger); }
+  button.pill { border: none; cursor: pointer; font: inherit; font-size: 12px; font-weight: 600; }
+  button.pill:hover { filter: brightness(0.97); }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(184px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px;
+    box-shadow: var(--elev); animation: fadeUp .45s ease both; }
+  .kpi:nth-child(2) { animation-delay: .05s; } .kpi:nth-child(3) { animation-delay: .1s; }
+  .kpi:nth-child(4) { animation-delay: .15s; }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted);
+    font-weight: 600; margin-bottom: 9px; }
+  .kpi .val { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums;
+    letter-spacing: .2px; line-height: 1.1; }
+  .kpi .val.accent { color: var(--accent); } .kpi .val.danger { color: var(--danger); }
+  .kpi .sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+    margin-bottom: 18px; box-shadow: var(--elev); }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; font-weight: 500; }
+  input, select, textarea { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 9px;
+    font: inherit; background: var(--surface); color: var(--text); transition: border-color .15s, box-shadow .15s; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+  input[type="checkbox"] { width: auto; cursor: pointer; accent-color: var(--accent); }
+  button.btn { background: var(--accent); color: #fff; border: none; padding: 9px 16px; border-radius: 9px;
+    cursor: pointer; font: inherit; font-weight: 600; transition: filter .15s, transform .05s; }
+  button.btn:hover { filter: brightness(1.07); } button.btn:active { transform: translateY(1px); }
+  button.btn.secondary { background: var(--accent-soft); color: var(--accent); }
+  button.btn.danger { background: var(--danger); color: #fff; }
+  button.btn.danger.soft { background: var(--danger-soft); color: var(--danger); }
+  button.link { background: none; border: none; color: var(--accent); cursor: pointer; padding: 2px 4px;
+    font: inherit; font-weight: 500; }
+  button.link:hover { text-decoration: underline; }
+  .chip { background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); border-radius: 999px;
+    padding: 4px 12px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .chip:hover { color: var(--text); }
+  .chip.active { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+  .bar-row { display: grid; grid-template-columns: 56px 1fr 64px; align-items: center; gap: 10px; margin: 5px 0; font-size: 13px; }
+  .bar-track { display: block; background: var(--surface-2); border-radius: 6px; height: 16px; overflow: hidden; }
+  .bar-fill { display: block; background: var(--accent); height: 100%; border-radius: 6px; min-width: 3px; }
+  .bar-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .bar-lbl { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chart-h { font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 600; margin: 0 0 10px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+  .row > div { flex: 1; min-width: 130px; }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  pre { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); padding: 14px;
+    border-radius: 10px; white-space: pre-wrap; font-size: 13px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--text);
+    color: var(--bg); padding: 11px 18px; border-radius: 10px; opacity: 0; transition: opacity .2s;
+    box-shadow: 0 10px 30px -8px rgba(0,0,0,.4); font-weight: 500; z-index: 60; }
+  .toast.show { opacity: 1; }
+  .modal-bg { position: fixed; inset: 0; background: color-mix(in srgb, #0b0f0e 48%, transparent);
+    backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 50; }
+  .modal-bg.show { display: flex; animation: fadeUp .2s ease both; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px;
+    width: 440px; max-width: calc(100vw - 32px); box-shadow: 0 24px 70px -20px rgba(0,0,0,.5); }
+  .modal h3 { font-family: var(--font-display); margin: 0 0 4px; font-size: 18px; }
+  .modal .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  .checkrow { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .checkrow label { margin: 0; color: var(--text); font-size: 15px; }
+  details.section { margin-top: 22px; }
+  details.section > summary { cursor: pointer; font-family: var(--font-display); font-size: 16px; font-weight: 600;
+    padding: 6px 0; list-style: none; display: flex; align-items: center; gap: 8px; user-select: none; }
+  details.section > summary::-webkit-details-marker { display: none; }
+  details.section > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; font-family: var(--font-body); }
+  details.section[open] > summary::before { transform: rotate(90deg); }
+  @media (max-width: 760px) {
+    body { overflow-x: hidden; }
+    /* single column; the bar sizes to its content (auto) so the grid doesn't
+       stretch it to half the viewport and leave a white gap */
+    .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; min-width: 0; }
+    .content { min-width: 0; max-width: 100vw; }
+    .sidebar { position: sticky; top: 0; z-index: 30; height: auto; gap: 0;
+      border-right: none; border-bottom: 1px solid var(--border); padding: 10px 16px; }
+    .brand { padding: 0; font-size: 21px; }
+    .nav-toggle { display: block; }
+    /* Open the menu as an overlay below the bar instead of pushing the page down. */
+    nav { display: none; position: absolute; top: 100%; left: 0; right: 0;
+      background: var(--surface); padding: 8px 16px 14px;
+      border-bottom: 1px solid var(--border); box-shadow: 0 16px 30px -12px rgba(0,0,0,.3); }
+    .sidebar.open nav { display: flex; }
+    main { padding: 20px; }
+    /* keep wide tables inside their own scroll so they never widen the page */
+    main table { display: block; overflow-x: auto; }
+  }
+</style>
+<script>document.documentElement.classList.toggle("dark", localStorage.getItem("timup-theme") === "dark");</script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="brand">⏱ Timup</div>
+      <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu">☰</button>
+    </div>
+    <nav>
+      <button data-tab="accueil" class="active"><span class="ic">🏠</span>Accueil</button>
+      <button data-tab="forfaits"><span class="ic">📊</span>Forfaits</button>
+      <button data-tab="rentabilite"><span class="ic">💰</span>Rentabilité</button>
+      <button data-tab="entrees"><span class="ic">🕑</span>Entrées</button>
+      <button data-tab="corbeille"><span class="ic">🗑</span>Corbeille</button>
+      <button data-tab="facture"><span class="ic">🧾</span>Facture</button>
+      <button data-tab="catalog"><span class="ic">👥</span>Clients / Projets</button>
+      <button data-tab="timer"><span class="ic">⏱</span>Timer</button>
+      <button data-tab="outils"><span class="ic">🛠</span>Outils</button>
+    </nav>
+  </aside>
+  <div class="content">
+    <header class="topbar">
+      <span id="timerbar">⏱ —</span>
+      <button id="theme-toggle" title="Thème clair / sombre" onclick="toggleTheme()">🌙</button>
+    </header>
+<main>
+  <section id="accueil" class="active">
+    <div class="kpis" id="kpis"></div>
+    <div class="card" id="charts-card">
+      <h2 style="margin:0 0 12px">Activité</h2>
+      <div id="chart-period" style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="chip" data-days="1">Aujourd'hui</button>
+        <button class="chip" data-days="7">7 jours</button>
+        <button class="chip active" data-days="30">30 jours</button>
+        <button class="chip" data-days="90">Trimestre</button>
+        <button class="chip" data-days="365">Année</button>
+      </div>
+      <div id="chart-bars" class="muted" style="margin-top:16px">Chargement…</div>
+    </div>
+    <h2>Temps restant par forfait</h2>
+    <table id="acc-forfaits-table" class="sortable"><thead><tr><th>Client</th><th>Projet</th><th class="num">Rechargé</th><th class="num">Consommé</th><th class="num">Restant</th></tr></thead><tbody></tbody></table>
+    <h2 style="margin-top:26px">Heures à facturer <span class="muted" style="font-weight:400;font-size:13px">· en attente</span></h2>
+    <table id="acc-hourly-table"><thead><tr><th>Date</th><th>Client</th><th>Projet</th><th class="num">Durée</th><th class="num">Taux</th><th class="num">Total</th><th>Statut</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="forfaits">
+    <h2>Temps restant par forfait</h2>
+    <table id="forfaits-table" class="sortable"><thead><tr><th>Client</th><th>Projet</th><th class="num">Rechargé</th><th class="num">Consommé</th><th class="num">Restant</th></tr></thead><tbody></tbody></table>
+    <div class="card" style="margin-top:18px">
+      <label style="margin-top:0;font-weight:600;color:var(--text);font-size:14px">Ajouter un forfait</label>
+      <div class="row" style="margin-top:10px">
+        <div><label>Projet (forfait)</label><select id="r-project"></select></div>
+        <div style="flex:0;min-width:90px"><label>Heures</label><input id="r-hours" type="number" min="0" step="any" placeholder="10" /></div>
+        <div style="flex:0"><label>Date</label><input id="r-date" type="date" /></div>
+        <div style="flex:0;min-width:110px"><label>Prix € (opt.)</label><input id="r-price" type="number" min="0" step="any" /></div>
+        <div><label>Note (opt.)</label><input id="r-note" placeholder="Forfait 10h payé juin" /></div>
+        <div style="flex:0"><button class="btn" onclick="addRecharge()">Ajouter le forfait</button></div>
+      </div>
+    </div>
+    <details class="section" id="recharges-details">
+      <summary>Historique des recharges <span id="recharges-count" class="muted" style="font-weight:400"></span></summary>
+      <table id="recharges-table" class="sortable"><thead><tr><th>Date</th><th>Client</th><th>Projet</th><th class="num">Heures</th><th class="num">Prix</th><th>Note</th><th data-nosort></th></tr></thead><tbody></tbody></table>
+    </details>
+    <h2 style="margin-top:26px">Heures à l'heure <span class="muted" style="font-weight:400;font-size:13px">· toutes (facturé / en attente)</span></h2>
+    <table id="forf-hourly-table"><thead><tr><th>Date</th><th>Client</th><th>Projet</th><th class="num">Durée</th><th class="num">Taux</th><th class="num">Total</th><th>Statut</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="rentabilite">
+    <h2>Rentabilité des projets prix fixe</h2>
+    <div class="card">
+      <div class="row" style="align-items:end">
+        <div style="flex:0"><label>Statut</label><select id="renta-status" onchange="renderRenta()">
+          <option value="all">Tous</option>
+          <option value="active">En cours</option>
+          <option value="done">Terminés</option>
+        </select></div>
+        <div style="flex:0"><label>Année</label><select id="renta-year" onchange="rentaYearChanged()"><option value="">Toutes</option></select></div>
+        <div style="flex:0"><label>Du</label><input id="renta-from" type="date" onchange="rentaDateChanged()" /></div>
+        <div style="flex:0"><label>Au</label><input id="renta-to" type="date" onchange="rentaDateChanged()" /></div>
+        <div style="flex:0"><button class="link" onclick="rentaClearFilters()">Réinitialiser</button></div>
+        <div style="flex:1;text-align:right" class="muted" id="renta-count"></div>
+      </div>
+    </div>
+    <table id="renta-table" class="sortable"><thead><tr><th>Client</th><th>Projet</th><th>Début</th><th>Durée</th><th class="num">Prix</th><th class="num">Heures réelles</th><th class="num">Taux effectif</th><th>Statut</th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="entrees">
+    <h2>Entrées</h2>
+    <div class="card">
+      <div class="row">
+        <div><label>Projet</label><select id="e-project"></select></div>
+        <div><label>Durée (1h30, 90m, 0.5h…)</label><input id="e-duration" placeholder="1h30" /></div>
+        <div><label>Description</label><input id="e-desc" /></div>
+        <div><label>Tag</label><input id="e-tag" /></div>
+        <div style="flex:0"><button class="btn" onclick="addEntry()">Ajouter</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div><label>Filtre projet</label><select id="f-project" onchange="loadEntries()"><option value="">tous</option></select></div>
+        <div><label>Du</label><input id="f-from" type="date" onchange="loadEntries()" /></div>
+        <div><label>Au</label><input id="f-to" type="date" onchange="loadEntries()" /></div>
+        <div><label>Recherche</label><input id="f-q" oninput="loadEntriesDebounced()" placeholder="description, tag…" /></div>
+        <div style="flex:0"><button class="btn secondary" onclick="loadEntries()">Filtrer</button></div>
+      </div>
+    </div>
+    <div class="card" id="bulk-bar" style="display:none">
+      <div class="row" style="align-items:end">
+        <div style="flex:0;white-space:nowrap;padding-bottom:8px"><strong id="bulk-count">0</strong> sélectionnée(s) — éditer en masse :</div>
+        <div style="flex:0"><label>Champ</label><select id="bulk-field" onchange="bulkFieldChanged()">
+          <option value="localDate">Date</option>
+          <option value="projectId">Projet</option>
+          <option value="tag">Tag</option>
+          <option value="billed">Facturé</option>
+        </select></div>
+        <div id="bulk-value-wrap" style="flex:1;min-width:160px"></div>
+        <div style="flex:0"><button class="btn" onclick="applyBulk()">Appliquer à la sélection</button></div>
+        <div style="flex:0"><button class="btn danger soft" onclick="bulkDelete()">🗑 Supprimer la sélection</button></div>
+        <div style="flex:0"><button class="link" onclick="clearSelection()">Annuler</button></div>
+      </div>
+    </div>
+    <table id="entries-table" class="sortable"><thead><tr><th style="width:30px" data-nosort><input type="checkbox" id="sel-all" onchange="selectAll(this.checked)" title="Tout sélectionner" /></th><th>Date</th><th>Saisi le</th><th>Projet</th><th>Durée</th><th>Description</th><th>Tag</th><th data-nosort>Facturé</th><th data-nosort></th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="corbeille">
+    <h2>Corbeille</h2>
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div style="flex:1"><span class="muted">Les entrées supprimées sont conservées <strong id="trash-keep">30</strong> jours, puis effacées définitivement. Tu peux les restaurer ici.</span></div>
+        <div style="flex:0"><button class="btn secondary" onclick="loadTrash()">Rafraîchir</button></div>
+      </div>
+    </div>
+    <div class="card" id="trash-bar" style="display:none">
+      <div class="row" style="align-items:end">
+        <div style="flex:1;white-space:nowrap;padding-bottom:8px"><strong id="trash-count">0</strong> sélectionnée(s) :</div>
+        <div style="flex:0"><button class="btn" onclick="restoreSelected()">↩ Restaurer la sélection</button></div>
+        <div style="flex:0"><button class="btn danger" onclick="purgeSelected()">Supprimer définitivement</button></div>
+        <div style="flex:0"><button class="link" onclick="trashSelectAll(false)">Annuler</button></div>
+      </div>
+    </div>
+    <table id="trash-table" class="sortable"><thead><tr><th style="width:30px" data-nosort><input type="checkbox" id="trash-sel-all" onchange="trashSelectAll(this.checked)" title="Tout sélectionner" /></th><th>Date</th><th>Projet</th><th>Durée</th><th>Description</th><th>Tag</th><th>Supprimé le</th><th data-nosort></th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="facture">
+    <h2>Préparer une facture</h2>
+    <div class="card">
+      <div class="row">
+        <div><label>Client</label><select id="inv-client"></select></div>
+        <div><label>Du</label><input id="inv-from" type="date" /></div>
+        <div><label>Au</label><input id="inv-to" type="date" /></div>
+        <div><label>Arrondi (min)</label><select id="inv-round"><option>0</option><option>6</option><option>10</option><option>15</option></select></div>
+        <div style="flex:0"><button class="btn" onclick="prepInvoice()">Préparer</button></div>
+      </div>
+    </div>
+    <div id="inv-result"></div>
+  </section>
+
+  <section id="catalog">
+    <h2>Clients & projets</h2>
+    <div class="card">
+      <div class="row">
+        <div><label>Nouveau client</label><input id="c-name" placeholder="Nom" /></div>
+        <div style="flex:0"><button class="btn" onclick="addClient()">Créer client</button></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div><label>Client</label><select id="p-client"></select></div>
+        <div><label>Projet</label><input id="p-name" placeholder="Nom du projet" /></div>
+        <div><label>Mode</label><select id="p-mode" onchange="syncProjectFields('p')"><option value="forfait">forfait</option><option value="horaire">horaire</option><option value="prix_fixe">prix fixe</option></select></div>
+        <div id="p-rate-wrap"><label>Taux €/h</label><input id="p-rate" type="number" /></div>
+        <div id="p-price-wrap"><label>Prix fixe €</label><input id="p-price" type="number" /></div>
+        <div id="p-est-wrap"><label>Est. heures</label><input id="p-est" type="number" /></div>
+        <div style="flex:0"><button class="btn" onclick="addProject()">Créer projet</button></div>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:6px">
+      <label style="display:flex;align-items:center;gap:8px;margin:0;cursor:pointer;color:var(--text)">
+        <input type="checkbox" id="cat-archived" onchange="renderCatalogTables()" /> Afficher les archivés
+      </label>
+    </div>
+    <h3 style="font-size:15px;margin:16px 0 8px">Clients</h3>
+    <table id="clients-table"><thead><tr><th>Nom</th><th>Notes</th><th class="num">Projets</th><th class="num">Actifs</th><th>Archivé</th><th></th></tr></thead><tbody></tbody></table>
+    <h3 style="font-size:15px;margin:20px 0 8px">Projets</h3>
+    <table id="projects-table" class="sortable"><thead><tr><th>Client</th><th>Projet</th><th>Mode</th><th class="num">Taux/Prix</th><th>Archivé</th><th data-nosort></th></tr></thead><tbody></tbody></table>
+  </section>
+
+  <section id="timer">
+    <h2>Timer</h2>
+    <div class="card">
+      <div style="max-width:380px"><label>Projet</label><select id="t-project"></select></div>
+      <div class="btn-group" style="margin-top:14px">
+        <button class="btn" onclick="timerStart()">Démarrer</button>
+        <button class="btn secondary" onclick="timerPause()">Pause</button>
+        <button class="btn secondary" onclick="timerResume()">Reprendre</button>
+        <button class="btn" onclick="timerStop()">Arrêter</button>
+        <button class="btn secondary" onclick="timerReassign()" title="Associer le timer en cours au projet sélectionné ci-dessus">Réassigner</button>
+        <button class="btn secondary" style="color:var(--danger)" onclick="timerDiscard()">Annuler</button>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:16px">
+        <div class="muted" style="margin-bottom:10px">Oublié de lancer ? Ajouter au timer en cours :</div>
+        <div class="btn-group">
+          <button class="btn secondary" onclick="timerAdd(5)">+5 min</button>
+          <button class="btn secondary" onclick="timerAdd(10)">+10 min</button>
+          <button class="btn secondary" onclick="timerAdd(15)">+15 min</button>
+          <button class="btn secondary" onclick="timerAdd(30)">+30 min</button>
+          <input id="t-add" type="number" min="0" step="any" placeholder="min" style="width:80px" />
+          <button class="btn secondary" onclick="timerAddCustom()">+ Ajouter</button>
+        </div>
+      </div>
+      <p class="muted" id="t-state" style="margin-top:16px"></p>
+    </div>
+  </section>
+
+  <section id="outils">
+    <h2>Import Excel & export</h2>
+    <div class="card">
+      <label>Chemin du fichier .xlsx (sur le serveur)</label>
+      <input id="imp-path" placeholder="/home/xavier/Claude code proj/Timup/forfait temps passé.xlsx" />
+      <div class="row" style="margin-top:8px">
+        <div style="flex:0"><button class="btn secondary" onclick="doImport(true)">Dry-run</button></div>
+        <div style="flex:0"><button class="btn" onclick="doImport(false)">Importer</button></div>
+      </div>
+      <div id="imp-result"></div>
+    </div>
+    <div class="card">
+      <a class="btn secondary" href="/export/data.json?token=__TIMUP_TOKEN__" download>Exporter JSON</a>
+      <a class="btn secondary" href="/export/entries.csv?token=__TIMUP_TOKEN__" download>Exporter CSV</a>
+      <p class="muted">Les exports sont aussi téléchargeables via le navigateur (token injecté).</p>
+    </div>
+  </section>
+</main>
+  </div>
+</div>
+
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <h3>Éditer l'entrée</h3>
+    <p class="muted" id="ed-meta"></p>
+    <label>Date</label><input id="ed-date" type="date" />
+    <label>Projet</label><select id="ed-project"></select>
+    <label>Durée (1h30, 90m, 0.5h…)</label><input id="ed-duration" placeholder="1h30" />
+    <label>Description</label><input id="ed-desc" />
+    <label>Tag</label><input id="ed-tag" />
+    <div class="checkrow"><input id="ed-billed" type="checkbox" /><label for="ed-billed">Facturé</label></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="closeEditEntry()">Annuler</button>
+      <button class="btn" onclick="saveEditEntry()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="client-modal">
+  <div class="modal">
+    <h3>Éditer le client</h3>
+    <label>Nom</label><input id="ec-name" />
+    <label>Notes</label><input id="ec-notes" />
+    <div class="checkrow"><input id="ec-archived" type="checkbox" /><label for="ec-archived">Archivé</label></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="closeClientModal()">Annuler</button>
+      <button class="btn" onclick="saveEditClient()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="project-modal">
+  <div class="modal">
+    <h3>Éditer le projet</h3>
+    <label>Client</label><select id="ep-client"></select>
+    <label>Nom</label><input id="ep-name" />
+    <label>Mode</label><select id="ep-mode" onchange="syncProjectFields('ep')"><option value="forfait">forfait</option><option value="horaire">horaire</option><option value="prix_fixe">prix fixe</option></select>
+    <div id="ep-rate-wrap"><label>Taux €/h</label><input id="ep-rate" type="number" min="0" step="any" /></div>
+    <div id="ep-price-wrap"><label>Prix fixe €</label><input id="ep-price" type="number" min="0" step="any" /></div>
+    <div id="ep-est-wrap"><label>Heures estimées</label><input id="ep-est" type="number" min="0" step="any" /></div>
+    <div class="checkrow"><input id="ep-completed" type="checkbox" /><label for="ep-completed">Terminé (gardé en rentabilité, masqué du timer)</label></div>
+    <div class="checkrow"><input id="ep-archived" type="checkbox" /><label for="ep-archived">Archivé</label></div>
+    <div class="actions">
+      <button class="btn secondary" onclick="closeProjectModal()">Annuler</button>
+      <button class="btn" onclick="saveEditProject()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="recharge-modal">
+  <div class="modal">
+    <h3>Éditer la recharge</h3>
+    <label>Date</label><input id="er-date" type="date" />
+    <label>Heures</label><input id="er-hours" type="number" min="0" step="any" />
+    <label>Prix € (optionnel)</label><input id="er-price" type="number" min="0" step="any" />
+    <label>Note (optionnel)</label><input id="er-note" />
+    <div class="actions">
+      <button class="btn secondary" onclick="closeRechargeModal()">Annuler</button>
+      <button class="btn" onclick="saveEditRecharge()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal">
+    <h3 id="confirm-title">Confirmer</h3>
+    <p class="muted" id="confirm-msg"></p>
+    <div class="actions">
+      <button class="btn secondary" id="confirm-cancel">Annuler</button>
+      <button class="btn" id="confirm-ok">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const TOKEN = "__TIMUP_TOKEN__";
+// In-app confirmation. Replaces native confirm() — which browsers silently make
+// return false after the "prevent additional dialogs" prompt, swallowing actions.
+function askConfirm(message, { okLabel = "Confirmer", danger = false, title = "Confirmer" } = {}) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById("confirm-modal");
+    document.getElementById("confirm-title").textContent = title;
+    document.getElementById("confirm-msg").textContent = message;
+    const ok = document.getElementById("confirm-ok");
+    const cancel = document.getElementById("confirm-cancel");
+    ok.textContent = okLabel;
+    ok.className = danger ? "btn danger" : "btn"; // solid red, readable white text (vs red-on-green)
+    const close = (val) => {
+      modal.classList.remove("show");
+      ok.onclick = null; cancel.onclick = null; modal.onclick = null;
+      document.removeEventListener("keydown", onKey);
+      resolve(val);
+    };
+    const onKey = (e) => { if (e.key === "Escape") close(false); else if (e.key === "Enter") close(true); };
+    ok.onclick = () => close(true);
+    cancel.onclick = () => close(false);
+    modal.onclick = (e) => { if (e.target === modal) close(false); }; // click backdrop = cancel
+    document.addEventListener("keydown", onKey);
+    modal.classList.add("show");
+    ok.focus();
+  });
+}
+async function api(method, path, body) {
+  const opts = { method, headers: { authorization: "Bearer " + TOKEN } };
+  if (body !== undefined) { opts.headers["content-type"] = "application/json"; opts.body = JSON.stringify(body); }
+  const res = await fetch(path, opts);
+  const text = await res.text();
+  const json = text ? JSON.parse(text) : null;
+  if (!res.ok) { toast((json && json.error && json.error.message) || ("Erreur " + res.status)); throw json; }
+  return json;
+}
+function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2500); }
+function fmtH(sec) { const s = Math.abs(sec); return (sec < 0 ? "-" : "") + Math.floor(s/3600) + "h" + String(Math.floor((s%3600)/60)).padStart(2,"0"); }
+function fmtEur(n) { return n.toLocaleString("fr-FR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + " €"; }
+function spanDays(from, to) { if (!from || !to) return -1; const d = Math.round((new Date(to + "T00:00:00") - new Date(from + "T00:00:00")) / 86400000); return isNaN(d) ? -1 : d; }
+
+// ---- Generic click-to-sort for tables marked .sortable ----
+// A cell's sort key is its data-sort attribute if present (for durations, dates
+// stored as ms, etc.), else parsed from its text: ISO date, number (handles
+// "229.5 €/h", "924,92 €", "30h00"), or lowercased text.
+function cellSortValue(td) {
+  if (!td) return "";
+  if (td.dataset.sort !== undefined) { const n = parseFloat(td.dataset.sort); return isNaN(n) ? td.dataset.sort.toLowerCase() : n; }
+  const t = td.textContent.trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t; // ISO date sorts lexically
+  let c = t.replace(/[^\d.,-]/g, "");
+  if (c.includes(",") && c.includes(".")) c = c.replace(/,/g, ""); // 1,234.5 → thousands comma
+  else if (c.includes(",")) c = c.replace(",", "."); // 924,92 → decimal
+  const n = parseFloat(c);
+  if (c !== "" && !isNaN(n)) return n;
+  return t.toLowerCase();
+}
+function sortTable(table, colIdx, th) {
+  const tb = table.querySelector("tbody");
+  const rows = [...tb.children].filter(r =>
+    !r.classList.contains("subtotal") && !r.classList.contains("grandtotal") && !r.querySelector("td[colspan]"));
+  if (rows.length < 2) return;
+  const dir = th.dataset.dir === "asc" ? "desc" : "asc";
+  table.querySelectorAll("thead th").forEach(h => { if (h !== th) { delete h.dataset.dir; h.querySelector(".sort-arrow")?.remove(); } });
+  th.dataset.dir = dir;
+  let arrow = th.querySelector(".sort-arrow"); if (!arrow) { arrow = document.createElement("span"); arrow.className = "sort-arrow"; th.appendChild(arrow); }
+  arrow.textContent = dir === "asc" ? "▲" : "▼";
+  rows.sort((a, b) => {
+    let va = cellSortValue(a.children[colIdx]), vb = cellSortValue(b.children[colIdx]);
+    const na = typeof va === "number", nb = typeof vb === "number";
+    if (na || nb) { // numeric column: non-numeric cells ("—") sink to the bottom
+      va = na ? va : -Infinity; vb = nb ? vb : -Infinity;
+      return dir === "asc" ? va - vb : vb - va;
+    }
+    return dir === "asc" ? String(va).localeCompare(String(vb), "fr") : String(vb).localeCompare(String(va), "fr");
+  });
+  rows.forEach(r => tb.appendChild(r));
+}
+function makeSortable(table) {
+  table.querySelectorAll("thead th").forEach((th, i) => {
+    if (th.dataset.nosort !== undefined) return;
+    th.classList.add("th-sort");
+    th.addEventListener("click", () => sortTable(table, i, th));
+  });
+}
+function fmtDateTime(ms) { const d = new Date(ms); const p = n => String(n).padStart(2,"0"); return `${p(d.getDate())}/${p(d.getMonth()+1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c])); }
+function todayStr() { const d = new Date(); const p = n => String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`; }
+function toggleTheme() {
+  const dark = !document.documentElement.classList.contains("dark");
+  document.documentElement.classList.toggle("dark", dark);
+  localStorage.setItem("timup-theme", dark ? "dark" : "light");
+  syncThemeIcon();
+}
+function syncThemeIcon() {
+  const dark = document.documentElement.classList.contains("dark");
+  const btn = document.getElementById("theme-toggle");
+  if (btn) { btn.textContent = dark ? "☀️" : "🌙"; btn.title = dark ? "Passer en clair" : "Passer en sombre"; }
+}
+// 🟢 ok · 🟠 ≤2h · 🔴 dépassé
+function forfaitDot(remainingSeconds) {
+  const rem = remainingSeconds || 0;
+  return `<span class="dot ${rem < 0 ? "danger" : rem < 7200 ? "warn" : "ok"}"></span>`;
+}
+function kpiCard(label, val, sub, cls) {
+  return `<div class="kpi"><div class="label">${label}</div><div class="val ${cls||""}">${val}</div>${sub?`<div class="sub">${sub}</div>`:""}</div>`;
+}
+async function loadKpis() {
+  const el = document.getElementById("kpis");
+  try {
+    const from = todayStr().slice(0, 7) + "-01"; // first day of this month
+    const [forfaits, hourly, entries] = await Promise.all([
+      api("GET", "/summary/forfaits"),
+      api("GET", "/summary/hourly").catch(() => []),
+      api("GET", "/entries?from=" + from + "&to=" + todayStr() + "&limit=2000"),
+    ]);
+    const monthSeconds = entries.reduce((s, e) => s + e.durationSeconds, 0);
+    const toBill = hourly.reduce((s, r) => s + (r.billableAmount || 0), 0);
+    const totalRemaining = forfaits.reduce((s, r) => s + (r.remainingSeconds || 0), 0);
+    const alert = forfaits.filter(r => (r.remainingSeconds || 0) < 7200).length;
+    el.innerHTML =
+      kpiCard("Heures ce mois", fmtH(monthSeconds)) +
+      kpiCard("À facturer (horaire)", Math.round(toBill).toLocaleString("fr-FR") + " €", "", "accent") +
+      kpiCard("Restant forfaits", fmtH(totalRemaining), "tous forfaits cumulés", totalRemaining < 0 ? "danger" : "") +
+      kpiCard("Forfaits en alerte", String(alert), "≤ 2h restantes ou dépassés", alert > 0 ? "danger" : "");
+  } catch { el.innerHTML = ""; }
+}
+
+// Tabs — driven by the URL hash (#entrees, #corbeille…) so a page reload stays
+// on the current tab and the browser back/forward buttons navigate between them.
+function activateTab(tab) {
+  let btn = document.querySelector(`nav button[data-tab="${tab}"]`);
+  if (!btn) { tab = "accueil"; btn = document.querySelector('nav button[data-tab="accueil"]'); }
+  document.querySelectorAll("nav button").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll("section").forEach(x => x.classList.remove("active"));
+  btn.classList.add("active");
+  document.getElementById(tab).classList.add("active");
+  refreshTab(tab);
+  document.querySelector(".sidebar").classList.remove("open"); // close the mobile menu
+  window.scrollTo(0, 0);
+}
+const tabFromHash = () => (location.hash || "#accueil").slice(1);
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  // Setting the hash triggers hashchange -> activateTab. If already on this tab
+  // (hash unchanged), activate directly so a re-click still refreshes the data.
+  if (tabFromHash() === b.dataset.tab) activateTab(b.dataset.tab);
+  else location.hash = b.dataset.tab;
+});
+window.addEventListener("hashchange", () => activateTab(tabFromHash()));
+function toggleNav() { document.querySelector(".sidebar").classList.toggle("open"); }
+
+// Chart period chips
+document.querySelectorAll("#chart-period .chip").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#chart-period .chip").forEach(x => x.classList.remove("active"));
+  b.classList.add("active");
+  chartDays = Number(b.dataset.days);
+  loadCharts();
+});
+
+let projectsCache = [], clientsCache = [], entriesCache = [], editingId = null;
+let catalogClients = [], catalogProjects = [], editingClientId = null, editingProjectId = null;
+let rechargesCache = [], editingRechargeId = null;
+function clientNameOf(clientId) { const c = clientsCache.find(c => c.id === clientId); return c ? c.name : "?"; }
+async function loadCatalog() {
+  // Active-only sets feed every project/client picker (new entry, filters, timer, edit-entry modal).
+  clientsCache = await api("GET", "/clients");
+  projectsCache = await api("GET", "/projects");
+  const byId = Object.fromEntries(clientsCache.map(c => [c.id, c.name]));
+  const optOf = p => `<option value="${p.id}">${esc(byId[p.clientId]||"?")} — ${esc(p.name)} (${p.mode})</option>`;
+  const projOpts = projectsCache.map(optOf).join("");
+  const activeProjOpts = projectsCache.filter(p => !p.completed).map(optOf).join(""); // timer picker hides finished projects
+  ["e-project","f-project","t-project"].forEach(id => { const el = document.getElementById(id); if (!el) return;
+    const keep = id === "f-project" ? '<option value="">tous</option>' : "";
+    el.innerHTML = keep + (id === "t-project" ? activeProjOpts : projOpts); });
+  document.getElementById("p-client").innerHTML = clientsCache.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  document.getElementById("inv-client").innerHTML = clientsCache.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  await renderCatalogTables();
+}
+async function renderCatalogTables() {
+  const qs = document.getElementById("cat-archived").checked ? "?includeArchived=true" : "";
+  const res = await Promise.all([api("GET", "/clients" + qs), api("GET", "/projects" + qs)]);
+  catalogClients = res[0]; catalogProjects = res[1];
+  const byId = Object.fromEntries(catalogClients.map(c => [c.id, c.name]));
+  const projsByClient = {};
+  catalogProjects.forEach(p => { (projsByClient[p.clientId] = projsByClient[p.clientId] || []).push(p); });
+  document.querySelector("#clients-table tbody").innerHTML = catalogClients.map(c => {
+    const projs = projsByClient[c.id] || [];
+    const total = projs.length;
+    const active = projs.filter(p => !p.completed && !p.archived).length;
+    const expandable = total > 0;
+    const archStyle = c.archived ? ' style="opacity:.55"' : '';
+    const expandAttrs = expandable ? ` class="clirow" data-cid="${c.id}" onclick="toggleClientProjects(this, event)" title="Déplier les projets"` : '';
+    return `<tr${expandAttrs}${archStyle}><td><span class="chev"></span>${esc(c.name)}</td><td>${esc(c.notes||"")}</td>`
+      + `<td class="num">${total}</td>`
+      + `<td class="num">${active > 0 ? `<span class="pill ok">${active}</span>` : '<span class="muted">0</span>'}</td>`
+      + `<td>${c.archived?"✓":""}</td>`
+      + `<td><button class="link" onclick="openEditClient(${c.id})">éditer</button></td></tr>`;
+  }).join("")
+    || `<tr><td colspan="6" class="muted">Aucun client</td></tr>`;
+  document.querySelector("#projects-table tbody").innerHTML = catalogProjects.map(p =>
+    `<tr${p.archived ? ' style="opacity:.5"' : ""}><td>${esc(byId[p.clientId]||"?")}</td><td>${esc(p.name)}</td><td>${p.mode}</td>
+     <td class="num" data-sort="${p.hourlyRate ?? p.fixedPrice ?? ''}">${projModeValue(p)}</td><td>${p.archived?"✓":""}</td>
+     <td><button class="link" onclick="openEditProject(${p.id})">éditer</button></td></tr>`).join("")
+    || `<tr><td colspan="6" class="muted">Aucun projet</td></tr>`;
+}
+function projStatusPill(p) {
+  if (p.archived) return '<span class="pill" style="opacity:.6">Archivé</span>';
+  if (p.completed) return '<span class="pill ok">Terminé</span>';
+  return '<span class="pill">En cours</span>';
+}
+// Click a client row → unfold its projects inline, aligned to the table columns.
+function toggleClientProjects(tr, ev) {
+  if (ev && ev.target.closest("button")) return; // let "éditer" act on its own
+  let n = tr.nextElementSibling;
+  if (n && n.classList.contains("cli-detail")) { // collapse
+    while (n && n.classList.contains("cli-detail")) { const x = n; n = n.nextElementSibling; x.remove(); }
+    tr.classList.remove("expanded"); return;
+  }
+  const cid = Number(tr.dataset.cid);
+  const projs = catalogProjects.filter(p => p.clientId === cid);
+  const rows = projs.map(p =>
+    `<tr class="cli-detail"><td class="cd-name">${esc(p.name)}</td>`
+    + `<td class="muted">${p.mode} · ${projModeValue(p)}</td><td></td>`
+    + `<td>${projStatusPill(p)}</td><td>${p.archived ? "✓" : ""}</td>`
+    + `<td><button class="link" onclick="openEditProject(${p.id})">éditer</button></td></tr>`).join("");
+  tr.insertAdjacentHTML("afterend", rows);
+  tr.classList.add("expanded");
+}
+let chartDays = 30;
+function barRow(label, sec, max, wide) {
+  const pct = max > 0 ? Math.round((sec / max) * 100) : 0;
+  return `<div class="bar-row"${wide ? ' style="grid-template-columns:200px 1fr 64px"' : ""}>` +
+    `<span class="bar-lbl">${esc(label)}</span>` +
+    `<span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>` +
+    `<span class="bar-val">${fmtH(sec)}</span></div>`;
+}
+// Activité : temps passé par projet sur la période choisie.
+async function loadCharts() {
+  const el = document.getElementById("chart-bars");
+  const to = todayStr();
+  const d = new Date(); d.setDate(d.getDate() - (chartDays - 1));
+  const p = n => String(n).padStart(2, "0");
+  const from = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`;
+  let entries;
+  try { entries = await api("GET", `/entries?from=${from}&to=${to}&limit=5000`); }
+  catch { el.textContent = "Erreur de chargement"; return; }
+  if (!entries.length) { el.innerHTML = `<div class="muted">Aucune activité sur la période.</div>`; return; }
+  const pById = Object.fromEntries(projectsCache.map(p => [p.id, p]));
+  const byProj = new Map();
+  for (const e of entries) byProj.set(e.projectId, (byProj.get(e.projectId) || 0) + e.durationSeconds);
+  const rows = [...byProj.entries()]
+    .map(([pid, sec]) => { const pr = pById[pid]; return { label: pr ? `${pr.name} · ${clientNameOf(pr.clientId)}` : ("#" + pid), sec }; })
+    .sort((a, b) => b.sec - a.sec);
+  const max = Math.max(...rows.map(r => r.sec));
+  el.innerHTML = rows.map(r => barRow(r.label, r.sec, max, true)).join("");
+}
+async function loadForfaitsTable(sel) {
+  const tb = document.querySelector(sel + " tbody"); if (!tb) return;
+  const rows = await api("GET", "/summary/forfaits");
+  tb.innerHTML = rows.map(r =>
+    `<tr class="frow" onclick="goToEntriesForProject(${r.projectId})" title="Voir les entrées de ce projet"><td>${esc(r.clientName)}</td><td>${esc(r.projectName)}</td><td class="num" data-sort="${r.rechargedSeconds||0}">${fmtH(r.rechargedSeconds||0)}</td><td class="num" data-sort="${r.totalSeconds}">${fmtH(r.totalSeconds)}</td>
+     <td class="num ${(r.remainingSeconds||0)<0?'neg':'pos'}" data-sort="${r.remainingSeconds||0}">${forfaitDot(r.remainingSeconds)}${fmtH(r.remainingSeconds||0)}</td></tr>`).join("") || `<tr><td colspan="5" class="muted">Aucun forfait</td></tr>`;
+}
+// Hourly entries with billing status + computed price. onlyUnbilled => the "à facturer" view.
+// Rows are grouped by client with a per-client subtotal, then a grand total.
+async function loadHourly(sel, onlyUnbilled) {
+  const tb = document.querySelector(sel + " tbody"); if (!tb) return;
+  const COLS = 7;
+  let rows;
+  try { rows = await api("GET", "/entries?mode=horaire&limit=2000" + (onlyUnbilled ? "&billed=false" : "")); } catch { return; }
+  if (!rows.length) {
+    tb.innerHTML = `<tr><td colspan="${COLS}" class="muted">${onlyUnbilled ? "Rien en attente de facturation 🎉" : "Aucune entrée à l'heure"}</td></tr>`;
+    return;
+  }
+  const pById = Object.fromEntries(projectsCache.map(p => [p.id, p]));
+  // Collapse entries sharing the same day + project (+ billed status) into one
+  // summed line — keeps the to-bill view short; the detail stays in Entrées.
+  const aggMap = new Map();
+  for (const e of rows) {
+    const key = `${e.localDate}|${e.projectId}|${e.billed ? 1 : 0}`;
+    let a = aggMap.get(key);
+    if (!a) {
+      const p = pById[e.projectId];
+      const rate = p && p.hourlyRate != null ? p.hourlyRate : null;
+      a = { localDate: e.localDate, projectId: e.projectId, billed: e.billed, rate, seconds: 0, count: 0, ids: [], entries: [],
+            client: p ? clientNameOf(p.clientId) : "?", proj: p ? p.name : ("#" + e.projectId) };
+      aggMap.set(key, a);
+    }
+    a.seconds += e.durationSeconds; a.count += 1; a.ids.push(e.id); a.entries.push(e);
+  }
+  const aggs = [...aggMap.values()].map(a => ({ ...a, amount: a.rate != null ? a.rate * (a.seconds / 3600) : null }));
+  // Group by client, preserving first-seen (date-desc) order.
+  const groups = []; const idx = {};
+  for (const a of aggs) {
+    if (idx[a.client] == null) { idx[a.client] = groups.length; groups.push({ client: a.client, items: [] }); }
+    groups[idx[a.client]].items.push(a);
+  }
+  const eur = (v, has) => has ? fmtEur(v) : '<span class="muted">—</span>';
+  let html = "", gSec = 0, gAmt = 0, gHas = false;
+  for (const g of groups) {
+    let cSec = 0, cAmt = 0, cHas = false;
+    for (const a of g.items) {
+      cSec += a.seconds;
+      if (a.amount != null) { cAmt += a.amount; cHas = true; }
+      const ids = JSON.stringify(a.ids);
+      const pill = a.billed
+        ? `<button class="pill ok" onclick='setBilledMany(${ids}, false)' title="Repasser en attente">Facturé</button>`
+        : `<button class="pill warn" onclick='setBilledMany(${ids}, true)' title="Marquer facturé">En attente</button>`;
+      // Only a multi-entry line can be unfolded — a single entry already IS the total.
+      const expandable = a.count > 1;
+      const key = `${sel}|${a.localDate}|${a.projectId}|${a.billed ? 1 : 0}`;
+      if (expandable) hourlyDetail[key] = { entries: a.entries, rate: a.rate };
+      const cnt = expandable ? ` <span class="muted" title="${a.count} entrées regroupées">·${a.count}</span>` : "";
+      const attrs = expandable ? ` class="hrow" data-key="${key}" onclick="toggleHourlyDetail(this, event)" title="Déplier les ${a.count} entrées"` : "";
+      html += `<tr${attrs}>`
+        + `<td><span class="chev"></span>${a.localDate}</td><td>${esc(a.client)}</td><td>${esc(a.proj)}${cnt}</td>`
+        + `<td class="num">${fmtH(a.seconds)}</td>`
+        + `<td class="num">${a.rate != null ? a.rate + " €/h" : '<span class="muted">—</span>'}</td>`
+        + `<td class="num">${eur(a.amount, a.amount != null)}</td><td>${pill}</td></tr>`;
+    }
+    gSec += cSec; if (cHas) { gAmt += cAmt; gHas = true; }
+    html += `<tr class="subtotal"><td colspan="3">Sous-total ${esc(g.client)}</td>`
+      + `<td class="num">${fmtH(cSec)}</td><td></td><td class="num">${eur(cAmt, cHas)}</td><td></td></tr>`;
+  }
+  html += `<tr class="grandtotal"><td colspan="3"><strong>Total à facturer</strong></td>`
+    + `<td class="num"><strong>${fmtH(gSec)}</strong></td><td></td>`
+    + `<td class="num"><strong>${eur(gAmt, gHas)}</strong></td><td></td></tr>`;
+  tb.innerHTML = html;
+}
+async function setBilledMany(ids, billed) {
+  await api("PATCH", "/entries", { ids, patch: { billed } });
+  toast(billed ? `${ids.length} marquée(s) facturée(s)` : `${ids.length} remise(s) en attente`);
+  loadHourly("#acc-hourly-table", true);
+  loadHourly("#forf-hourly-table", false);
+  loadKpis();
+}
+// Per-line entry detail for the "à facturer" tables (filled by loadHourly).
+let hourlyDetail = {};
+function toggleHourlyDetail(tr, ev) {
+  if (ev && ev.target.closest("button")) return; // let the Facturé pill act on its own
+  let n = tr.nextElementSibling;
+  if (n && n.classList.contains("hourly-detail")) { // already open → collapse all detail rows
+    while (n && n.classList.contains("hourly-detail")) { const x = n; n = n.nextElementSibling; x.remove(); }
+    tr.classList.remove("expanded"); return;
+  }
+  const data = hourlyDetail[tr.dataset.key] || { entries: [], rate: null };
+  const rate = data.rate;
+  // One detail row per entry, aligned to the table columns: heure (Date),
+  // description (Projet), durée (Durée), total (Total). Taux/Statut left blank.
+  const rows = data.entries.slice().sort((a, b) => a.startedAt - b.startedAt).map(e => {
+    const d = new Date(e.startedAt);
+    const hm = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    const amount = rate != null ? rate * (e.durationSeconds / 3600) : null;
+    return `<tr class="hourly-detail"><td class="hd-time">${hm}</td><td></td>`
+      + `<td class="hd-desc">${esc(e.description || "—")}${e.tag ? ` <span class="muted">#${esc(e.tag)}</span>` : ""}</td>`
+      + `<td class="num">${fmtH(e.durationSeconds)}</td><td></td>`
+      + `<td class="num">${amount != null ? fmtEur(amount) : '<span class="muted">—</span>'}</td><td></td></tr>`;
+  }).join("");
+  tr.insertAdjacentHTML("afterend", rows);
+  tr.classList.add("expanded");
+}
+// Forfait row → Entrées tab, pre-filtered on this project (clears date/search filters).
+function goToEntriesForProject(projectId, ev) {
+  if (ev && ev.target.closest("button")) return; // let inner buttons (e.g. the status pill) act
+  ["f-from", "f-to", "f-q"].forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+  const fp = document.getElementById("f-project"); if (fp) fp.value = String(projectId);
+  if (location.hash === "#entrees") loadEntries(); else location.hash = "entrees";
+}
+async function loadAccueil() {
+  loadKpis();
+  loadCharts();
+  await loadForfaitsTable("#acc-forfaits-table");
+  await loadHourly("#acc-hourly-table", true);
+}
+async function loadForfaits() {
+  await loadForfaitsTable("#forfaits-table");
+  const forfaitProjects = projectsCache.filter(p => p.mode === "forfait");
+  document.getElementById("r-project").innerHTML = forfaitProjects.map(p =>
+    `<option value="${p.id}">${esc(clientNameOf(p.clientId))} — ${esc(p.name)}</option>`).join("")
+    || '<option value="">(aucun projet forfait)</option>';
+  if (!document.getElementById("r-date").value) document.getElementById("r-date").value = todayStr();
+  await loadRecharges();
+  await loadHourly("#forf-hourly-table", false);
+}
+async function loadRecharges() {
+  const rs = await api("GET", "/recharges");
+  rechargesCache = rs;
+  document.getElementById("recharges-count").textContent = rs.length ? "(" + rs.length + ")" : "";
+  const pById = Object.fromEntries(projectsCache.map(p => [p.id, p]));
+  document.querySelector("#recharges-table tbody").innerHTML = rs.map(r => {
+    const p = pById[r.projectId];
+    const client = p ? clientNameOf(p.clientId) : "?";
+    const proj = p ? p.name : ("#" + r.projectId);
+    return `<tr><td>${r.date}</td><td>${esc(client)}</td><td>${esc(proj)}</td><td class="num">${r.hours}h</td>
+     <td class="num">${r.price!=null?r.price+" €":"—"}</td><td>${esc(r.note||"")}</td>
+     <td><button class="link" onclick="openEditRecharge(${r.id})">éditer</button> <button class="link" onclick="delRecharge(${r.id})">suppr</button></td></tr>`;
+  }).join("") || `<tr><td colspan="7" class="muted">Aucune recharge</td></tr>`;
+}
+function openEditRecharge(id) {
+  const r = rechargesCache.find(x => x.id === id); if (!r) return;
+  editingRechargeId = id;
+  document.getElementById("er-date").value = r.date;
+  document.getElementById("er-hours").value = r.hours;
+  document.getElementById("er-price").value = r.price != null ? r.price : "";
+  document.getElementById("er-note").value = r.note || "";
+  document.getElementById("recharge-modal").classList.add("show");
+}
+function closeRechargeModal() { document.getElementById("recharge-modal").classList.remove("show"); editingRechargeId = null; }
+async function saveEditRecharge() {
+  const r = rechargesCache.find(x => x.id === editingRechargeId); if (!r) return;
+  const body = {};
+  const date = document.getElementById("er-date").value; if (date && date !== r.date) body.date = date;
+  const hours = Number(document.getElementById("er-hours").value); if (hours && hours !== r.hours) body.hours = hours;
+  const rawPrice = document.getElementById("er-price").value.trim();
+  const price = rawPrice === "" ? null : Number(rawPrice); if (price !== (r.price ?? null)) body.price = price;
+  const note = document.getElementById("er-note").value.trim(); if (note !== (r.note || "")) body.note = note || null;
+  if (Object.keys(body).length === 0) { closeRechargeModal(); return; }
+  await api("PATCH", "/recharges/" + editingRechargeId, body);
+  closeRechargeModal(); toast("Recharge mise à jour"); loadForfaits();
+}
+async function addRecharge() {
+  const projectId = Number(document.getElementById("r-project").value);
+  const hours = Number(document.getElementById("r-hours").value);
+  const date = document.getElementById("r-date").value;
+  if (!projectId || !hours || !date) return toast("Projet, heures et date requis");
+  const body = { projectId, hours, date };
+  const price = document.getElementById("r-price").value; if (price) body.price = Number(price);
+  const note = document.getElementById("r-note").value.trim(); if (note) body.note = note;
+  await api("POST", "/recharges", body);
+  document.getElementById("r-hours").value = ""; document.getElementById("r-price").value = ""; document.getElementById("r-note").value = "";
+  toast("Forfait ajouté"); loadForfaits();
+}
+async function delRecharge(id) { if (!(await askConfirm("Supprimer cette recharge ?", { okLabel: "Supprimer", danger: true }))) return; await api("DELETE", "/recharges/" + id); toast("Recharge supprimée"); loadForfaits(); }
+let rentaCache = [];
+async function loadRenta() {
+  rentaCache = await api("GET", "/summary/profitability");
+  populateRentaYears();
+  renderRenta();
+}
+function populateRentaYears() {
+  const sel = document.getElementById("renta-year"); if (!sel) return;
+  const years = new Set();
+  rentaCache.forEach(r => { if (r.firstEntryDate) years.add(r.firstEntryDate.slice(0, 4)); if (r.lastEntryDate) years.add(r.lastEntryDate.slice(0, 4)); });
+  const sorted = [...years].sort().reverse();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Toutes</option>' + sorted.map(y => `<option value="${y}">${y}</option>`).join("");
+  if (sorted.includes(cur)) sel.value = cur;
+}
+function rentaYearChanged() {
+  const y = document.getElementById("renta-year").value;
+  document.getElementById("renta-from").value = y ? y + "-01-01" : "";
+  document.getElementById("renta-to").value = y ? y + "-12-31" : "";
+  renderRenta();
+}
+function rentaDateChanged() { document.getElementById("renta-year").value = ""; renderRenta(); } // manual dates clear the year shortcut
+function rentaClearFilters() {
+  document.getElementById("renta-status").value = "all";
+  document.getElementById("renta-year").value = "";
+  document.getElementById("renta-from").value = "";
+  document.getElementById("renta-to").value = "";
+  renderRenta();
+}
+// Filter the cached rows by status + a date span overlapping [from, to], then render.
+function renderRenta() {
+  const dash = '<span class="muted">—</span>';
+  const status = document.getElementById("renta-status").value;
+  const from = document.getElementById("renta-from").value;
+  const to = document.getElementById("renta-to").value;
+  const rows = rentaCache.filter(r => {
+    if (status === "active" && r.completed) return false;
+    if (status === "done" && !r.completed) return false;
+    if (from || to) {
+      if (!r.firstEntryDate || !r.lastEntryDate) return false; // no activity → excluded once a date filter is set
+      if (from && r.lastEntryDate < from) return false; // project span ends before the range
+      if (to && r.firstEntryDate > to) return false;    // project span starts after the range
+    }
+    return true;
+  });
+  const cnt = document.getElementById("renta-count");
+  if (cnt) cnt.textContent = `${rows.length} projet${rows.length > 1 ? "s" : ""}`;
+  document.querySelector("#renta-table tbody").innerHTML = rows.map(r => {
+    const pill = r.completed
+      ? `<button class="pill ok" onclick="toggleCompleted(${r.projectId}, false)" title="Remettre en cours">Terminé</button>`
+      : `<button class="pill" onclick="toggleCompleted(${r.projectId}, true)" title="Marquer terminé">En cours</button>`;
+    return `<tr class="${r.completed ? "rowdone " : ""}frow" onclick="goToEntriesForProject(${r.projectId}, event)" title="Voir les entrées de ce projet"><td>${esc(r.clientName)}</td><td>${esc(r.projectName)}</td>
+     <td style="white-space:nowrap">${r.firstEntryDate || dash}</td>
+     <td style="white-space:nowrap" data-sort="${spanDays(r.firstEntryDate, r.lastEntryDate)}">${fmtSpan(r.firstEntryDate, r.lastEntryDate)}</td>
+     <td class="num" style="white-space:nowrap">${r.fixedPrice??"—"} €</td><td class="num">${r.hoursSpent??0} h</td>
+     <td class="num">${r.effectiveHourlyRate!=null?r.effectiveHourlyRate+" €/h":"—"}</td>
+     <td>${pill}</td></tr>`;
+  }).join("") || `<tr><td colspan="8" class="muted">Aucun projet pour ce filtre</td></tr>`;
+}
+async function toggleCompleted(projectId, completed) {
+  await api("PATCH", "/projects/" + projectId, { completed });
+  toast(completed ? "Projet marqué terminé" : "Projet remis en cours");
+  await loadCatalog();   // refresh project pickers so finished projects drop out of the timer
+  loadRenta();
+}
+// Span between two YYYY-MM-DD dates as "X mois et Y jours" (or "N jours" if < 1 month).
+function fmtSpan(from, to) {
+  if (!from || !to) return '<span class="muted">—</span>';
+  const a = new Date(from + "T00:00:00"), b = new Date(to + "T00:00:00");
+  const totalDays = Math.round((b - a) / 86400000);
+  if (isNaN(totalDays) || totalDays < 0) return '<span class="muted">—</span>';
+  const dayWord = n => n + (n > 1 ? " jours" : " jour");
+  if (totalDays === 0) return '<span title="même jour">1 jour</span>';
+  let months = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth());
+  const anchor = new Date(a); anchor.setMonth(a.getMonth() + months);
+  if (anchor > b) { months--; anchor.setMonth(anchor.getMonth() - 1); }
+  const days = Math.round((b - anchor) / 86400000);
+  const label = months <= 0 ? dayWord(totalDays) : months + " mois" + (days > 0 ? " et " + dayWord(days) : "");
+  return `<span title="${dayWord(totalDays)} au total">${label}</span>`;
+}
+let entriesFilterTimer = null;
+function loadEntriesDebounced() { clearTimeout(entriesFilterTimer); entriesFilterTimer = setTimeout(loadEntries, 250); }
+async function loadEntries() {
+  const q = new URLSearchParams();
+  const p = document.getElementById("f-project").value; if (p) q.set("projectId", p);
+  const from = document.getElementById("f-from").value; if (from) q.set("from", from);
+  const to = document.getElementById("f-to").value; if (to) q.set("to", to);
+  const text = document.getElementById("f-q").value; if (text) q.set("q", text);
+  q.set("limit", "1000");
+  const rows = await api("GET", "/entries?" + q.toString());
+  entriesCache = rows;
+  selectedEntries.clear();              // changing the filter resets the selection
+  document.getElementById("sel-all").checked = false;
+  const byId = Object.fromEntries(projectsCache.map(p => [p.id, p.name]));
+  document.querySelector("#entries-table tbody").innerHTML = rows.map(e =>
+    `<tr><td><input type="checkbox" class="row-sel" data-id="${e.id}" onchange="toggleSelect(${e.id}, this.checked)" /></td>
+     <td>${e.localDate}</td><td class="muted" data-sort="${e.createdAt}">${fmtDateTime(e.createdAt)}</td><td>${esc(byId[e.projectId]||e.projectId)}</td><td data-sort="${e.durationSeconds}">${fmtH(e.durationSeconds)}</td>
+     <td>${esc(e.description||"")}</td><td>${esc(e.tag||"")}</td>
+     <td><input type="checkbox" ${e.billed?"checked":""} onchange="toggleBilled(${e.id}, this.checked)" /></td>
+     <td><button class="link" onclick="openEditEntry(${e.id})">éditer</button> <button class="link" onclick="delEntry(${e.id})">suppr</button></td></tr>`).join("")
+    || `<tr><td colspan="9" class="muted">Aucune entrée</td></tr>`;
+  updateBulkBar();
+}
+const selectedEntries = new Set();
+function updateBulkBar() {
+  document.getElementById("bulk-count").textContent = String(selectedEntries.size);
+  document.getElementById("bulk-bar").style.display = selectedEntries.size ? "block" : "none";
+  if (selectedEntries.size && !document.getElementById("bulk-value")) bulkFieldChanged();
+}
+function toggleSelect(id, checked) {
+  if (checked) selectedEntries.add(id); else selectedEntries.delete(id);
+  const all = document.getElementById("sel-all");
+  all.checked = entriesCache.length > 0 && selectedEntries.size === entriesCache.length;
+  updateBulkBar();
+}
+function selectAll(checked) {
+  selectedEntries.clear();
+  if (checked) entriesCache.forEach(e => selectedEntries.add(e.id));
+  document.querySelectorAll("#entries-table .row-sel").forEach(cb => { cb.checked = checked; });
+  updateBulkBar();
+}
+function clearSelection() { selectAll(false); document.getElementById("sel-all").checked = false; }
+function bulkFieldChanged() {
+  const field = document.getElementById("bulk-field").value;
+  const wrap = document.getElementById("bulk-value-wrap");
+  if (field === "localDate") wrap.innerHTML = `<label>Nouvelle date</label><input type="date" id="bulk-value" value="${todayStr()}" />`;
+  else if (field === "projectId") wrap.innerHTML = `<label>Projet</label><select id="bulk-value">${projectsCache.map(p => `<option value="${p.id}">${esc(clientNameOf(p.clientId))} — ${esc(p.name)}</option>`).join("")}</select>`;
+  else if (field === "tag") wrap.innerHTML = `<label>Tag</label><input id="bulk-value" placeholder="laisser vide = aucun" />`;
+  else if (field === "billed") wrap.innerHTML = `<label>Statut</label><select id="bulk-value"><option value="true">Facturé</option><option value="false">En attente</option></select>`;
+}
+async function applyBulk() {
+  const ids = [...selectedEntries];
+  if (!ids.length) return;
+  const field = document.getElementById("bulk-field").value;
+  const raw = document.getElementById("bulk-value").value;
+  let value;
+  if (field === "projectId") value = Number(raw);
+  else if (field === "billed") value = raw === "true";
+  else if (field === "tag") value = raw.trim() || null;
+  else value = raw; // localDate
+  if (field === "localDate" && !value) return toast("Choisis une date");
+  if (!(await askConfirm(`Appliquer ce changement à ${ids.length} entrée(s) ?`, { okLabel: "Appliquer" }))) return;
+  await api("PATCH", "/entries", { ids, patch: { [field]: value } });
+  toast(`${ids.length} entrée(s) mises à jour`);
+  loadEntries();
+}
+async function bulkDelete() {
+  const ids = [...selectedEntries];
+  if (!ids.length) return;
+  if (!(await askConfirm(`Déplacer ${ids.length} entrée(s) vers la corbeille ?`, { okLabel: "Supprimer", danger: true }))) return;
+  const r = await api("POST", "/entries/bulk-delete", { ids });
+  toast(`${r.deleted} entrée(s) déplacée(s) vers la corbeille`);
+  loadEntries();
+}
+async function addEntry() {
+  const projectId = Number(document.getElementById("e-project").value);
+  const duration = document.getElementById("e-duration").value.trim();
+  if (!projectId || !duration) return toast("Projet et durée requis");
+  await api("POST", "/entries", { projectId, duration, description: document.getElementById("e-desc").value || undefined, tag: document.getElementById("e-tag").value || undefined });
+  document.getElementById("e-duration").value = ""; document.getElementById("e-desc").value = ""; document.getElementById("e-tag").value = "";
+  toast("Entrée ajoutée"); loadEntries();
+}
+function openEditEntry(id) {
+  const e = entriesCache.find(x => x.id === id); if (!e) return;
+  editingId = id;
+  document.getElementById("ed-meta").textContent = "Saisi le " + fmtDateTime(e.createdAt) + (e.source ? " · " + e.source : "");
+  document.getElementById("ed-project").innerHTML = projectsCache.map(p =>
+    `<option value="${p.id}" ${p.id === e.projectId ? "selected" : ""}>${esc(clientNameOf(p.clientId))} — ${esc(p.name)}</option>`).join("");
+  document.getElementById("ed-date").value = e.localDate;
+  document.getElementById("ed-duration").value = fmtH(e.durationSeconds);
+  document.getElementById("ed-desc").value = e.description || "";
+  document.getElementById("ed-tag").value = e.tag || "";
+  document.getElementById("ed-billed").checked = !!e.billed;
+  document.getElementById("edit-modal").classList.add("show");
+}
+function closeEditEntry() { document.getElementById("edit-modal").classList.remove("show"); editingId = null; }
+async function saveEditEntry() {
+  const e = entriesCache.find(x => x.id === editingId); if (!e) return;
+  const body = {};
+  const pid = Number(document.getElementById("ed-project").value); if (pid && pid !== e.projectId) body.projectId = pid;
+  const date = document.getElementById("ed-date").value; if (date && date !== e.localDate) body.localDate = date;
+  const dur = document.getElementById("ed-duration").value.trim(); if (dur && dur !== fmtH(e.durationSeconds)) body.duration = dur;
+  const desc = document.getElementById("ed-desc").value.trim(); if (desc !== (e.description || "")) body.description = desc || null;
+  const tag = document.getElementById("ed-tag").value.trim(); if (tag !== (e.tag || "")) body.tag = tag || null;
+  const billed = document.getElementById("ed-billed").checked; if (billed !== !!e.billed) body.billed = billed;
+  if (Object.keys(body).length === 0) { closeEditEntry(); return; }
+  await api("PATCH", "/entries/" + editingId, body);
+  closeEditEntry(); toast("Entrée mise à jour"); loadEntries();
+}
+async function toggleBilled(id, checked) {
+  await api("PATCH", "/entries/" + id, { billed: checked });
+  const e = entriesCache.find(x => x.id === id); if (e) e.billed = checked;
+  toast(checked ? "Marqué facturé" : "Marqué non facturé");
+}
+async function delEntry(id) { if (!(await askConfirm("Déplacer cette entrée vers la corbeille ?", { okLabel: "Supprimer", danger: true }))) return; await api("DELETE", "/entries/" + id); toast("Déplacée vers la corbeille"); loadEntries(); }
+
+// ---- Corbeille (soft-deleted entries) ----
+let trashCache = [];
+const trashSelected = new Set();
+async function loadTrash() {
+  trashCache = await api("GET", "/entries/trash");
+  trashSelected.clear();
+  const all = document.getElementById("trash-sel-all"); if (all) all.checked = false;
+  const byId = Object.fromEntries(projectsCache.map(p => [p.id, p.name]));
+  document.querySelector("#trash-table tbody").innerHTML = trashCache.map(e =>
+    `<tr><td><input type="checkbox" class="trash-sel" data-id="${e.id}" onchange="trashToggleSelect(${e.id}, this.checked)" /></td>
+     <td>${e.localDate}</td><td>${esc(byId[e.projectId]||e.projectId)}</td><td data-sort="${e.durationSeconds}">${fmtH(e.durationSeconds)}</td>
+     <td>${esc(e.description||"")}</td><td>${esc(e.tag||"")}</td><td class="muted" data-sort="${e.deletedAt||0}">${e.deletedAt?fmtDateTime(e.deletedAt):""}</td>
+     <td><button class="link" onclick="restoreOne(${e.id})">restaurer</button> <button class="link" style="color:var(--danger)" onclick="purgeOne(${e.id})">suppr. définitive</button></td></tr>`).join("")
+    || `<tr><td colspan="8" class="muted">Corbeille vide</td></tr>`;
+  updateTrashBar();
+}
+function updateTrashBar() {
+  document.getElementById("trash-count").textContent = String(trashSelected.size);
+  document.getElementById("trash-bar").style.display = trashSelected.size ? "block" : "none";
+}
+function trashToggleSelect(id, checked) {
+  if (checked) trashSelected.add(id); else trashSelected.delete(id);
+  document.getElementById("trash-sel-all").checked = trashCache.length > 0 && trashSelected.size === trashCache.length;
+  updateTrashBar();
+}
+function trashSelectAll(checked) {
+  trashSelected.clear();
+  if (checked) trashCache.forEach(e => trashSelected.add(e.id));
+  document.querySelectorAll("#trash-table .trash-sel").forEach(cb => { cb.checked = checked; });
+  document.getElementById("trash-sel-all").checked = checked;
+  updateTrashBar();
+}
+async function restoreOne(id) { await api("POST", "/entries/restore", { ids: [id] }); toast("Entrée restaurée"); loadTrash(); }
+async function restoreSelected() {
+  const ids = [...trashSelected]; if (!ids.length) return;
+  const r = await api("POST", "/entries/restore", { ids });
+  toast(`${r.restored} entrée(s) restaurée(s)`); loadTrash();
+}
+async function purgeOne(id) {
+  if (!(await askConfirm("Supprimer définitivement cette entrée ? Cette action est irréversible.", { okLabel: "Supprimer définitivement", danger: true }))) return;
+  await api("POST", "/entries/purge", { ids: [id] }); toast("Supprimée définitivement"); loadTrash();
+}
+async function purgeSelected() {
+  const ids = [...trashSelected]; if (!ids.length) return;
+  if (!(await askConfirm(`Supprimer définitivement ${ids.length} entrée(s) ? Cette action est irréversible.`, { okLabel: "Supprimer définitivement", danger: true }))) return;
+  const r = await api("POST", "/entries/purge", { ids });
+  toast(`${r.purged} entrée(s) supprimée(s) définitivement`); loadTrash();
+}
+async function addClient() { const name = document.getElementById("c-name").value.trim(); if (!name) return; await api("POST", "/clients", { name }); document.getElementById("c-name").value=""; toast("Client créé"); loadCatalog(); }
+async function addProject() {
+  const body = { clientId: Number(document.getElementById("p-client").value), name: document.getElementById("p-name").value.trim(), mode: document.getElementById("p-mode").value };
+  const rate = document.getElementById("p-rate").value; if (rate) body.hourlyRate = Number(rate);
+  const price = document.getElementById("p-price").value; if (price) body.fixedPrice = Number(price);
+  const est = document.getElementById("p-est").value; if (est) body.estimatedHours = Number(est);
+  if (!body.clientId || !body.name) return toast("Client et nom requis");
+  await api("POST", "/projects", body); document.getElementById("p-name").value=""; toast("Projet créé"); loadCatalog();
+}
+function openEditClient(id) {
+  const c = catalogClients.find(x => x.id === id); if (!c) return;
+  editingClientId = id;
+  document.getElementById("ec-name").value = c.name;
+  document.getElementById("ec-notes").value = c.notes || "";
+  document.getElementById("ec-archived").checked = !!c.archived;
+  document.getElementById("client-modal").classList.add("show");
+}
+function closeClientModal() { document.getElementById("client-modal").classList.remove("show"); editingClientId = null; }
+async function saveEditClient() {
+  const c = catalogClients.find(x => x.id === editingClientId); if (!c) return;
+  const body = {};
+  const name = document.getElementById("ec-name").value.trim(); if (name && name !== c.name) body.name = name;
+  const notes = document.getElementById("ec-notes").value.trim(); if (notes !== (c.notes || "")) body.notes = notes || null;
+  const arch = document.getElementById("ec-archived").checked; if (arch !== !!c.archived) body.archived = arch;
+  if (Object.keys(body).length === 0) { closeClientModal(); return; }
+  await api("PATCH", "/clients/" + editingClientId, body);
+  closeClientModal(); toast("Client mis à jour"); await loadCatalog();
+}
+// Show only the field relevant to the chosen mode (horaire -> taux, prix_fixe -> prix, forfait -> rien).
+function syncProjectFields(prefix) {
+  const mode = document.getElementById(prefix + "-mode").value;
+  const set = (id, on) => { const el = document.getElementById(id); if (el) el.style.display = on ? "" : "none"; };
+  set(prefix + "-rate-wrap", mode === "horaire");
+  set(prefix + "-price-wrap", mode === "prix_fixe");
+  set(prefix + "-est-wrap", false);
+}
+function projModeValue(p) {
+  if (p.mode === "horaire") return p.hourlyRate != null ? p.hourlyRate + " €/h" : '<span class="muted">à renseigner</span>';
+  if (p.mode === "prix_fixe") return p.fixedPrice != null ? p.fixedPrice + " €" : '<span class="muted">à renseigner</span>';
+  return '<span class="muted">—</span>';
+}
+function openEditProject(id) {
+  const p = catalogProjects.find(x => x.id === id); if (!p) return;
+  editingProjectId = id;
+  // Reassignment targets = active clients; ensure the current client shows even if archived.
+  const opts = clientsCache.slice();
+  if (!opts.find(c => c.id === p.clientId)) { const cur = catalogClients.find(c => c.id === p.clientId); if (cur) opts.unshift(cur); }
+  document.getElementById("ep-client").innerHTML = opts.map(c =>
+    `<option value="${c.id}" ${c.id === p.clientId ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+  document.getElementById("ep-name").value = p.name;
+  document.getElementById("ep-mode").value = p.mode;
+  document.getElementById("ep-rate").value = p.hourlyRate != null ? p.hourlyRate : "";
+  document.getElementById("ep-price").value = p.fixedPrice != null ? p.fixedPrice : "";
+  document.getElementById("ep-est").value = p.estimatedHours != null ? p.estimatedHours : "";
+  document.getElementById("ep-archived").checked = !!p.archived;
+  document.getElementById("ep-completed").checked = !!p.completed;
+  syncProjectFields("ep");
+  document.getElementById("project-modal").classList.add("show");
+}
+function closeProjectModal() { document.getElementById("project-modal").classList.remove("show"); editingProjectId = null; }
+async function saveEditProject() {
+  const p = catalogProjects.find(x => x.id === editingProjectId); if (!p) return;
+  const body = {};
+  const cid = Number(document.getElementById("ep-client").value); if (cid && cid !== p.clientId) body.clientId = cid;
+  const name = document.getElementById("ep-name").value.trim(); if (name && name !== p.name) body.name = name;
+  const mode = document.getElementById("ep-mode").value; if (mode !== p.mode) body.mode = mode;
+  const numField = (elId, orig, key) => {
+    const raw = document.getElementById(elId).value.trim();
+    const val = raw === "" ? null : Number(raw);
+    if (val !== (orig ?? null)) body[key] = val;
+  };
+  numField("ep-rate", p.hourlyRate, "hourlyRate");
+  numField("ep-price", p.fixedPrice, "fixedPrice");
+  numField("ep-est", p.estimatedHours, "estimatedHours");
+  const arch = document.getElementById("ep-archived").checked; if (arch !== !!p.archived) body.archived = arch;
+  const done = document.getElementById("ep-completed").checked; if (done !== !!p.completed) body.completed = done;
+  if (Object.keys(body).length === 0) { closeProjectModal(); return; }
+  await api("PATCH", "/projects/" + editingProjectId, body);
+  closeProjectModal(); toast("Projet mis à jour"); await loadCatalog();
+}
+async function prepInvoice() {
+  const q = new URLSearchParams({ clientId: document.getElementById("inv-client").value, rounding: document.getElementById("inv-round").value });
+  const from = document.getElementById("inv-from").value; if (from) q.set("from", from);
+  const to = document.getElementById("inv-to").value; if (to) q.set("to", to);
+  const prep = await api("GET", "/invoice/prep?" + q.toString());
+  document.getElementById("inv-result").innerHTML =
+    `<div class="card"><pre>${prep.copyText}</pre>
+     <button class="btn secondary" onclick='navigator.clipboard.writeText(${JSON.stringify(prep.copyText)});toast("Copié")'>Copier</button>
+     <button class="btn" onclick='markBilled(${JSON.stringify(prep.entryIds)})'>Marquer facturé (${prep.entryIds.length})</button></div>`;
+}
+async function markBilled(ids) { if (!ids.length) return; await api("POST", "/invoice/mark-billed", { entryIds: ids }); toast("Marqué facturé"); prepInvoice(); }
+async function doImport(dryRun) {
+  const path = document.getElementById("imp-path").value.trim(); if (!path) return toast("Chemin requis");
+  const rep = await api("POST", "/import", { path, dryRun });
+  const recon = rep.reconciliation.map(r => `${r.match===true?"✓":r.match===false?"✗":"·"} ${r.client}: calc ${fmtH(r.computedRemainingSeconds)} / excel ${r.expectedRemainingSeconds!=null?fmtH(r.expectedRemainingSeconds):"—"}`).join("\n");
+  document.getElementById("imp-result").innerHTML = `<pre>${dryRun?"DRY-RUN\n":""}clients=${rep.clients} forfaits=${rep.forfaitProjects} recharges=${rep.recharges} entrées=${rep.entries}\n\n${recon}\n\n${rep.warnings.length} avertissement(s)</pre>`;
+}
+async function timerStart() { const id = Number(document.getElementById("t-project").value); if (!id) return; await api("POST","/timer/start",{projectId:id}); refreshTimer(); }
+async function timerPause() { await api("POST","/timer/pause"); refreshTimer(); }
+async function timerResume() { await api("POST","/timer/resume"); refreshTimer(); }
+async function timerStop() { const r = await api("POST","/timer/stop",{}); toast(r && r.discarded ? "Timer trop court (< 2 min) — annulé" : "Entrée enregistrée"); refreshTimer(); loadEntries(); }
+async function timerReassign() { const id = Number(document.getElementById("t-project").value); if (!id) return toast("Choisis un projet ci-dessus"); await api("POST","/timer/reassign",{projectId:id}); toast("Projet du timer changé"); refreshTimer(); }
+async function timerDiscard() { if (!(await askConfirm("Annuler le timer en cours ? Aucune entrée ne sera enregistrée.", { okLabel: "Annuler le timer", danger: true }))) return; await api("POST","/timer/discard"); toast("Timer annulé"); refreshTimer(); }
+async function timerAdd(min) { await api("POST","/timer/add",{minutes:min}); toast("+" + min + " min ajoutées au timer"); refreshTimer(); }
+async function timerAddCustom() { const m = Number(document.getElementById("t-add").value); if (!m || m <= 0) return toast("Indique un nombre de minutes"); await api("POST","/timer/add",{minutes:m}); document.getElementById("t-add").value = ""; toast("+" + m + " min ajoutées au timer"); refreshTimer(); }
+async function refreshTimer() {
+  const st = await api("GET","/timer");
+  const bar = document.getElementById("timerbar"); const stEl = document.getElementById("t-state");
+  if (st.running) { const proj = projectsCache.find(p=>p.id===st.projectId); const label = proj?proj.name:("#"+st.projectId);
+    bar.textContent = "⏱ " + fmtH(st.elapsedActiveSeconds) + " — " + label + (st.paused?" (pause)":"");
+    if (stEl) stEl.textContent = "En cours : " + label + " · actif " + fmtH(st.elapsedActiveSeconds) + " · brut " + fmtH(st.elapsedRawSeconds) + (st.paused?" · en pause":""); }
+  else { bar.textContent = "⏱ —"; if (stEl) stEl.textContent = "Aucun timer en cours."; }
+}
+function refreshTab(tab) {
+  if (tab === "accueil") loadAccueil();
+  else if (tab === "forfaits") loadForfaits();
+  else if (tab === "rentabilite") loadRenta();
+  else if (tab === "entrees") loadEntries();
+  else if (tab === "corbeille") loadTrash();
+  else if (tab === "catalog") loadCatalog();
+  else if (tab === "timer") refreshTimer();
+}
+(async function init() { syncThemeIcon(); syncProjectFields("p"); document.querySelectorAll("table.sortable").forEach(makeSortable); await loadCatalog(); activateTab(tabFromHash()); await refreshTimer(); setInterval(refreshTimer, 30000); })();
+</script>
+</body>
+</html>
